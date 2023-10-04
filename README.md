@@ -1,2 +1,2 @@
 # rug
-RUG - Rosa Utility for Gaming [in rus - Коврик]
+RUG - Rosa Utility for Gaming [Коврик]
