@@ -2,33 +2,145 @@
 #creator by RedRoot(Yaciyna Mikhail) for GAMER STATION [on linux] and Gaming Community OS Linux
 # GPL-3.0 License 
 
-# функция проверки окружения kvm
-start_conf_create () {
-#
-# путь до главного каталога kmv
+# первичные переменные
+site_packegs="https://abf.rosalinux.ru"
+site_source_app="https://github.com/"
+PATH_USER_CONF="/home/${USER}/.config_rug"
+
+#определяем какая система запустила ggs
+linuxos_version=`cat "/etc/os-release" | grep "PRETTY_NAME" | sed 's/PRETTY_NAME=//g' | sed 's/"//g'`
+linuxos_gnome="true"
+
+linux_os_test() {
+    # проверка что линукс система с рабочим окружением GNOME
+    if [ ! -e /usr/bin/gnome-shell ];then linuxos_gnome="false";fi
+
+    #проверяем что система совместима с RUG
+    if echo "${linuxos_version}" | grep -ow "ROSA Fresh Desktop" > /dev/null && echo "${linuxos_gnome}" | grep -ow "true" > /dev/null
+        then
+            #tput setaf 3;echo -n "$1:";tput setaf 2;echo "$package_status";tput sgr 0
+            tput sgr 0;echo -n "Операциооная система: ${linuxos_version} [GNOME]";tput setaf 2;echo -n " СОВМЕСТИМА";tput sgr 0;echo " с RUG"
+            tput sgr 0
+            LINUXOS_RUN="rosa"
+
+                else
+                tput sgr 0;echo -n "Операциооная система: ${linuxos_version} [GNOME]";tput setaf 1;echo -n " НЕ СОВМЕСТИМА";tput sgr 0;echo " с RUG"
+                # GTK_THEME="Adwaita-dark" zenity --error --ellipsize  --timeout=5 --text="Данная операционная система [${linuxos_version}] не совместима с RUG"
+                exit 1
+fi
+}
+
+no_root() {
+
+    if [ "$UID" -eq 0 ];then
+         echo -n "скрипт не запущен из под root";tput setaf 1;echo " - НЕТ!";tput sgr0;exit 1
+        else
+        echo -n "скрипт не запущен из под root";tput setaf 2;echo " - ДА!";tput sgr0
+    fi
+}
+
+
+internet_check() {
+ site_internet_test="$1"
+ INTERNET_CHECK="0"
+      # проверка на наличие сетевого доступа до ресурса
+      wget -q --spider ${site_internet_test}
+      if [ $? -eq 0 ]; then
+          INTERNET_CHECK="1"
+      fi
+  
+}
+
+core_conf_create () {
+    #
+    # Проверка что существует папка конфигурации пользователя в его окружении, если нет, создаем ее и копируем туда конфиг по умолчанию
+    if [ ! -d "$PATH_USER_CONF" ]
+    then
+    #! папки .config_rug нет в окружении пользователя, создаем!
+        tput setaf 1; echo "папки .kmv-config нет в окружении пользователя $USER, создаем";tput sgr0
+        mkdir -p "/home/${USER}/.kmv-config"
+        PATH_USER_CONF="/home/${USER}/.kmv-config"
+        cp -RT "$PATH_CORE_APP/data/.kmv-config" "$PATH_USER_CONF"
+        ln -s "/home/$USER/.kmv-config" "$PATH_CORE_APP/.kmv-config"
+        tput setaf 2; echo "папка конфигурации пользователя расположена [$PATH_USER_CONF]";tput sgr0
+        else
+            PATH_USER_CONF="/home/${USER}/.kmv-config"
+            tput setaf 2; echo "папка конфигурации пользователя расположена [$PATH_USER_CONF]";tput sgr0
+    fi
+}
+
+start_test_rug() {
+
+ #!проверяем что система совместима с RUG
+ linuxos_version=$1
+  echo -n "Версия операционной системы Линукс";tput setaf 2;echo " - [$linuxos_version]";tput sgr0
+  linux_os_test "$linuxos_version"
+
+    #! Проверяем интернет ресурсы
+    SITE_APP="0"
+  # проверка на наличие доступа до ресурса с пакетами для установки
+  site_packegs=$2
+  internet_check $site_packegs
+      if [ "$INTERNET_CHECK" -eq 0 ]; then
+
+          echo -n "Доступа до ресурса [$site_packegs]";tput setaf 1;echo " - НЕТ!";tput sgr0
+          else 
+           echo -n "Доступ до ресурса [$site_packegs]";tput setaf 2;echo " - ЕСТЬ!";tput sgr0
+           SITE_APP="1"
+      fi
+    SITE_SOURCE="0"
+        # проверка на наличие доступа до ресурса с исходным кодом
+        site_source_app=$3
+        internet_check $site_source_app
+              if [ "$INTERNET_CHECK" -eq 0 ]; then
+
+          echo -n "Доступа до ресурса [$site_source_app]";tput setaf 1;echo " - НЕТ!";tput sgr0
+          else 
+           echo -n "Доступ до ресурса [$site_source_app]";tput setaf 2;echo " - ЕСТЬ!";tput sgr0
+           SITE_SOURCE="1"
+      fi
+
+    #!проверяем что скрипт установки не запущен от пользователя root
+    no_root
+}
+
+# ОСНОВНЫЕ КОМАНДЫ RUG
+case "$1" in
+
+"-t")
+start_test_rug "$linuxos_version" "$site_packegs" "$site_source_app"
+;;
+
+*)
+echo "###RUG - Rosa Utility for GAMING - КОВРИК###
+-t                - работа в режиме терминала
+-gui              - работа с установленным по умолчанию графическим меню
+"
+;;
+esac
+
+
+exit 1
+
+
+# функция проверки окружения rug
+# Проверка что существует папка конфигурации пользователя в его окружении, если нет, создаем ее и копируем туда конфиг по умолчанию
+if [ ! -d "/home/${USER}/.config_rug" ]
+    then
+    core_conf_create ()
+fi
+
+
+# путь до главного каталога rug
 PATH_CORE_APP=$(cd $(dirname "$0") && pwd);
 #|| echo "ошибка определения главного каталога kmv"
-echo "Главный каталог kmv [$PATH_CORE_APP]"
+echo "Главный каталог rug [$PATH_CORE_APP]"
 cd "$PATH_CORE_APP"
 # определение версии kmv
-VERSION_KMV=`cat version` || echo "ошибка определения версии программы"
+VERSION_RUG=`cat version` || echo "ошибка определения версии программы"
 NAME_APP=`cat name-app` || echo "ошибка определения названия программы"
 FULL_NAME_APP="$NAME_APP[$VERSION_KMV]"
 echo "полное назваие программы - $FULL_NAME_APP"
-# Проверка что существует папка конфигурации пользователя в его окружении, если нет, создаем ее и копируем туда конфиг по умолчанию
-if [ ! -d "/home/${USER}/.kmv-config" ]
-then
-#! папки .kmv-config нет окружении пользователя, создаем!
-tput setaf 1; echo "папки .kmv-config нет в окружении пользователя $USER, создаем";tput sgr0
-mkdir -p "/home/${USER}/.kmv-config"
-PATH_USER_CONF="/home/${USER}/.kmv-config"
-cp -RT "$PATH_CORE_APP/data/.kmv-config" "$PATH_USER_CONF"
-ln -s "/home/$USER/.kmv-config" "$PATH_CORE_APP/.kmv-config"
-tput setaf 2; echo "папка конфигурации пользователя расположена [$PATH_USER_CONF]";tput sgr0
-else
-PATH_USER_CONF="/home/${USER}/.kmv-config"
-tput setaf 2; echo "папка конфигурации пользователя расположена [$PATH_USER_CONF]";tput sgr0
-fi
 
 # Проверка что существует папка applications в окружении пользователя, если нет, создаем ее
 if [ ! -d "/home/${USER}/.local/share/applications" ]
@@ -37,7 +149,7 @@ mkdir -p "/home/${USER}/.local/share/applications"
 fi
 
 LINUXOS_VERSION=`cat "/etc/os-release" | grep "PRETTY_NAME" | sed 's/PRETTY_NAME=//g' | sed 's/"//g'` || echo "["`$date`"]"" - Ошибка определения операционной системы в которой запускается " >> $PATH_USER_CONF/logs/kvm-core.log
-}
+
 
 start_conf_create
 
