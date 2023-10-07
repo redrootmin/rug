@@ -6,6 +6,7 @@
 site_packegs="https://abf.rosalinux.ru"
 site_source_app="https://github.com/"
 PATH_USER_CONF="/home/${USER}/.config_rug"
+start_date=$(date +"%d.%m.%Y-%H:%M:%S")
 
 #определяем какая система запустила ggs
 linuxos_version=`cat "/etc/os-release" | grep "PRETTY_NAME" | sed 's/PRETTY_NAME=//g' | sed 's/"//g'`
@@ -51,23 +52,6 @@ internet_check() {
   
 }
 
-core_conf_create () {
-    #
-    # Проверка что существует папка конфигурации пользователя в его окружении, если нет, создаем ее и копируем туда конфиг по умолчанию
-    if [ ! -d "$PATH_USER_CONF" ]
-    then
-    #! папки .config_rug нет в окружении пользователя, создаем!
-        tput setaf 1; echo "папки .kmv-config нет в окружении пользователя $USER, создаем";tput sgr0
-        mkdir -p "/home/${USER}/.kmv-config"
-        PATH_USER_CONF="/home/${USER}/.kmv-config"
-        cp -RT "$PATH_CORE_APP/data/.kmv-config" "$PATH_USER_CONF"
-        ln -s "/home/$USER/.kmv-config" "$PATH_CORE_APP/.kmv-config"
-        tput setaf 2; echo "папка конфигурации пользователя расположена [$PATH_USER_CONF]";tput sgr0
-        else
-            PATH_USER_CONF="/home/${USER}/.kmv-config"
-            tput setaf 2; echo "папка конфигурации пользователя расположена [$PATH_USER_CONF]";tput sgr0
-    fi
-}
 
 start_test_rug() {
 
@@ -104,17 +88,49 @@ start_test_rug() {
     no_root
 }
 
+core_conf_create () {
+    # В РАРАБОТКЕ!
+    # Проверка что существует папка конфигурации пользователя в его окружении, если нет, создаем ее и копируем туда конфиг по умолчанию
+    if [ ! -d "$PATH_USER_CONF" ]
+    then
+    #! папки .config_rug нет в окружении пользователя, создаем!
+        tput setaf 1; echo "папки .kmv-config нет в окружении пользователя $USER, создаем";tput sgr0
+        mkdir -p "/home/${USER}/.kmv-config"
+        PATH_USER_CONF="/home/${USER}/.kmv-config"
+        cp -RT "$PATH_CORE_APP/data/.kmv-config" "$PATH_USER_CONF"
+        ln -s "/home/$USER/.kmv-config" "$PATH_CORE_APP/.kmv-config"
+        tput setaf 2; echo "папка конфигурации пользователя расположена [$PATH_USER_CONF]";tput sgr0
+        else
+            PATH_USER_CONF="/home/${USER}/.kmv-config"
+            tput setaf 2; echo "папка конфигурации пользователя расположена [$PATH_USER_CONF]";tput sgr0
+    fi
+}
+
 # ОСНОВНЫЕ КОМАНДЫ RUG
+
 case "$1" in
 
-"-t")
+"-test"|"-T")
 start_test_rug "$linuxos_version" "$site_packegs" "$site_source_app"
+;;
+
+"-t"|"-cli")
+tput setaf 1
+echo "терминальный режим на стадии разработки!"
+tput sgr0
+;;
+
+"-G"|"-gui")
+tput setaf 1
+echo "графический режим на стадии разработки!"
+tput sgr0
 ;;
 
 *)
 echo "###RUG - Rosa Utility for GAMING - КОВРИК###
--t                - работа в режиме терминала
--gui              - работа с установленным по умолчанию графическим меню
+-T или -test           -тест системы на совместимость и проверка ресурсов
+-t или -cli               - работа в режиме терминала
+-G или -gui            - работа с установленным по умолчанию графическим меню
 "
 ;;
 esac
