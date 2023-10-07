@@ -55,6 +55,9 @@ internet_check() {
 
 start_test_rug() {
 
+ #!проверяем что скрипт установки не запущен от пользователя root
+ no_root
+
  #!проверяем что система совместима с RUG
  linuxos_version=$1
   echo -n "Версия операционной системы Линукс";tput setaf 2;echo " - [$linuxos_version]";tput sgr0
@@ -84,8 +87,7 @@ start_test_rug() {
            SITE_SOURCE="1"
       fi
 
-    #!проверяем что скрипт установки не запущен от пользователя root
-    no_root
+
 }
 
 core_conf_create () {
