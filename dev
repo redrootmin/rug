@@ -21,7 +21,7 @@ sleep 2
 echo 30
 sleep 2
 echo 90
-) | yad --progress --enable-log=terminal --log-expanded  --log-on-top --log-height 256 --bar "":perm
+) | yad --progress
 
 
 
