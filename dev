@@ -1,6 +1,52 @@
 #!/bin/bash
 #creator by RedRoot(Yaciyna Mikhail) for GAMER STATION [on linux] and Gaming Community OS Linux
-# GPL-3.0 License 
+# GPL
+pass_user0="$1"
+#script_dir=$(cd $(dirname "$0") && pwd);
+script_dir="/home/${USER}/.config_rug"
+vars_dir="${script_dir}/vars"
+icon_dir="${script_dir}/icons"
+images_dir="${script_dir}/images"
+name_app=`cat "${script_dir}/name-app"`
+echo "Папка программы $name_app:[$script_dir]"
+image1="$script_dir/images/rosa-mesa-update512.png"
+icon1="$script_dir/icons/mesa300.jpg"
+
+KEY_GUI=`echo $RANDOM`
+
+
+yad --plug="$KEY_GUI" --tabnum=1 --list --radiolist --image="$image1" --image-on-top \
+--separator=" " --search-column=2 --print-column=2 \
+--column="выбор" --column="Версия драйвера" \
+false "[rosa2021]mesa-rosa-default[23.2.1]" \
+false "[rosa2021]mesa-redroot-stable[23.2.1]" \
+false "[rosa2021]mesa-redroot-rc[23.2.0rc4]" \
+false "[rosa2021]mesa-redroot-devel[23.3.0]" > "${vars_dir}/mesa_select"&
+
+yad --plug="$KEY_GUI" --tabnum=2 --list --radiolist --image="$image1" --image-on-top \
+--separator=" " --search-column=2 --print-column=2 \
+--column="выбор" --column="Версия драйвера" \
+false "[rosa2021]mesa-rosa-default[23.2.1]" \
+false "[rosa2021]mesa-redroot-stable[23.2.1]" \
+false "[rosa2021]mesa-redroot-rc[23.2.0rc4]" \
+false "[rosa2021]mesa-redroot-devel[23.3.0]" > "${vars_dir}/mesa_select"&
+
+yad --plug="$KEY_GUI" --tabnum=3 --list --radiolist --image="$image1" --image-on-top \
+--separator=" " --search-column=2 --print-column=2 \
+--column="выбор" --column="Версия драйвера" \
+false "[rosa2021]mesa-rosa-default[23.2.1]" \
+false "[rosa2021]mesa-redroot-stable[23.2.1]" \
+false "[rosa2021]mesa-redroot-rc[23.2.0rc4]" \
+false "[rosa2021]mesa-redroot-devel[23.3.0]" > "${vars_dir}/mesa_select"&
+
+
+GTK_THEME="Adwaita-dark" yad --notebook --stack   --key="$KEY_GUI"  --width=512 --height=560 \
+--tab="KERNEL" --tab="MESA[AMD/INTEL]" --tab="NVIDIA" \
+--center --undecorated --fixed --window-icon=$icon1 --title="$name_app" \
+--button="Обновить:0" --button="Выход:1" --button="Установка:2"
+
+
+exit 0
 
 # первичные переменные
 site_packegs="https://abf.rosalinux.ru"
