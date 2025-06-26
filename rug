@@ -1,139 +1,162 @@
 #!/bin/bash
 #creator by RedRoot(Yaciyna Mikhail) for GAMER STATION [on linux] and Gaming Community OS Linux
 # GPL-3.0 License 
-#проверяем что скрипт установки не запущен от пользователя root
+# Part of the code was developed by the AI ​​model Deepseek
 
-if [ "$UID" -eq 0 ];then
-tput setaf 1; echo "Этот скрипт не нужно запускать из под root!";tput sgr0;exit 1
-else
-tput setaf 2; echo "все хорошо этот скрипт не запущен из под root!"
-fi
+# Глобальные переменные
+SUPER_USER=""
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+VERSION="1.0"
+NAME="RUG (Русская Утилита для Геймеров)"
 
-pass_user0="$1"
-#script_dir=$(cd $(dirname "$0") && pwd);
-script_dir="/home/${USER}/.config_rug"
-vars_dir="${script_dir}/vars"
-icon_dir="${script_dir}/icons"
-images_dir="${script_dir}/images"
-name_app=`cat "${script_dir}/name-app"`
-echo "Папка программы $name_app:[$script_dir]"
-image1="$script_dir/images/rosa-kernel-update512.png"
-image2="$script_dir/images/rosa-mesa-update512.png"
-image3="$script_dir/images/rosa-nvidia-update512.png"
-icon1="$script_dir/icons/mesa300.jpg"
-
-#определяем какая система запустила rosa-mesa-switcher
-linuxos_version=`cat "/etc/os-release" | grep "PRETTY_NAME" | sed 's/PRETTY_NAME=//g' | sed 's/"//g'`
-linuxos_gnome="true"
-
-if [ ! -e /usr/bin/gnome-shell ];then linuxos_gnome="false";fi
-
-#проверяем что система совместима с ggs
-if echo "${linuxos_version}" | grep -ow "ROSA Fresh Desktop" > /dev/null
-then
-tput setaf 2;echo "Операциооная система: ${linuxos_version} совместима с rosa-mesa-switcher"
-tput sgr 0
-linuxos_run0="rosa"
-export linuxos_run=$linuxos_run0
-linux_os_conf0="$linuxos_run_config"
-export linux_os_conf=$linux_os_conf0
-
-else
-tput setaf 1;echo "Операциооная система: ${linuxos_version} не совместима с rosa-mesa-switcher"
-tput sgr 0
-GTK_THEME="Adwaita-dark" zenity --error --ellipsize  --timeout=5 --text="Данная операционная система [${linuxos_version}] не совместима с rosa-mesa-switcher"
-exit 1
-fi
-
-if [[ "${pass_user0}" == "" ]];then
-pass_user0=$(GTK_THEME="Adwaita-dark" zenity --entry --width=128 --height=128 --title="Запрос пароля" --text="Для работы скрипта ${version} требуется Ваш пароль superuser(root):" --hide-text)
-fi
-if [[ "${pass_user0}" == "" ]]
-then
-GTK_THEME="Adwaita-dark" zenity --error --text="Пароль не введён"
-exit 0
-else 
-export pass_user=${pass_user0}
-fi
-
-# функция с предложением перезагрузиться.
-function info_reboot () {
-script_dir=$1
-GTK_THEME="Adwaita-dark" yad --title="скрипт запущен в Wayland!" --image-on-top --picture --size=fit --filename="${images_dir}}/xorg-wayland.png" --width=450 --height=327 --center --inc=256  --text-align=center --text="Данный скрипт работает только в сессии X.org" --timeout=10 --timeout-indicator=bottom
+# Функция для отображения справки
+show_help() {
+    echo "Использование: $0 [опции]"
+    echo
+    echo "Опции:"
+    echo "  -gui <модуль>        Запуск графического окружения (доступные модули: gtk)"
+    echo "  -style <стиль>       Применить стиль (доступные: gnome, gnome-panel, redroot, macos, ubuntu, linux-mint, touchscreen, notebook)"
+    echo "  -app <приложения>    Установить приложения (доступные: amdvlk,furmark,gravitymark)"
+    echo "  -conf <конфиги>      Применить конфигурации (доступные: swap90,hd7970,amdoverclock,ram16gb)"
+    echo "  -install             Установить утилиту в систему"
+    echo "  -h, --help           Показать эту справку"
+    echo "  -v, --version        Показать версию"
+    echo
 }
 
-# функция с меню программы
-function gui_app_generator () {
-#переменные
-script_dir=$1
-KEY_GUI=`echo $RANDOM`
-#загружаем список репозиториев из файла в массив
-#readarray -t repos_list < "${script_dir}/config/repos-list"
-
-# tabs 1
-yad --plug="$KEY_GUI" --tabnum=1 --list --radiolist --image="$image1" --image-on-top \
---separator=" " --search-column=2 --print-column=2 \
---column="выбор" --column="Версия ядра Linux" \
-false "[rosa2021]mesa-rosa-default[23.2.1]" \
-false "[rosa2021]mesa-redroot-stable[23.2.1]" \
-false "[rosa2021]mesa-redroot-rc[23.2.0rc4]" \
-false "[rosa2021]mesa-redroot-devel[23.3.0]" > "${vars_dir}/kernel_select"&
-
-# tabs 2
-yad --plug="$KEY_GUI" --tabnum=2 --list --radiolist --image="$image2" --image-on-top \
---separator=" " --search-column=2 --print-column=2 \
---column="выбор" --column="Версия драйвера mesa" \
-false "[rosa2021]mesa-rosa-default[23.2.1]" \
-false "[rosa2021]mesa-redroot-stable[23.2.1]" \
-false "[rosa2021]mesa-redroot-rc[23.2.0rc4]" \
-false "[rosa2021]mesa-redroot-devel[23.3.0]" > "${vars_dir}/mesa_select"&
-
-# tabs 3
-yad --plug="$KEY_GUI" --tabnum=3 --list --radiolist --image="$image3" --image-on-top \
---separator=" " --search-column=2 --print-column=2 \
---column="выбор" --column="Версия драйвера nvidia" \
-false "[rosa2021]mesa-rosa-default[23.2.1]" \
-false "[rosa2021]mesa-redroot-stable[23.2.1]" \
-false "[rosa2021]mesa-redroot-rc[23.2.0rc4]" \
-false "[rosa2021]mesa-redroot-devel[23.3.0]" > "${vars_dir}/mesa_select"&
-
-# run core-gui-app
-GTK_THEME="Adwaita-dark" yad --notebook --stack   --key="$KEY_GUI"  --width=512 --height=560 \
---tab="KERNEL" --tab="MESA[AMD/INTEL]" --tab="NVIDIA" \
---center --fixed --window-icon=$icon1 --title="$name_app" \
---button="Обновить:0" --button="Выход:1" --button="Установка:2"
-
-select_button0="$?"
-export select_button=$select_button0
-
-style_select0=`cat "${vars_dir}}/style_select"`
-export style_select=$style_select0
-rm -f "${vars_dir}}g/style_select"
-
-theme_colors0=`cat "${vars_dir}}/theme_colors"`
-export theme_colors="$theme_colors0"
-rm -f "$script_dir/config/theme_colors"
-
-conf_temp_gui0=`cat "${vars_dir}}/conf_temp_gui"`
-export conf_temp_gui="$conf_temp_gui0"
-rm -f "${vars_dir}}/theme_colors"
-
+# Функция для запроса пароля root
+request_root_password() {
+    if [ -z "$SUPER_USER" ]; then
+        echo "Для выполнения некоторых скриптов требуется пароль root"
+        read -s -p "Введите пароль root: " SUPER_USER
+        echo
+    fi
 }
 
-# бесконечный чикл для формы программы
-while true;do
-gui_app_generator $script_dir
+# Функция для запуска скриптов
+run_scripts() {
+    local type=$1
+    local scripts=$2
+    local folder=$3
+    
+    IFS=',' read -ra script_array <<< "$scripts"
+    for script in "${script_array[@]}"; do
+        script_path="$SCRIPT_DIR/$folder/${script}.sh"
+        if [ -f "$script_path" ]; then
+            echo "Запуск скрипта: $script_path"
+            if [ "$type" == "conf" ]; then
+                echo "$SUPER_USER" | sudo -S bash "$script_path"
+            else
+                bash "$script_path"
+            fi
+        else
+            echo "скрипт $script отсутствует, пропускаем"
+        fi
+    done
+}
 
-# включение обнавления
-if [[ ${select_button} == "0" ]];then
-bash "$script_dir/manual_update.sh" $pass_user $name_script
-fi
+# Функция для установки утилиты
+install_rug() {
+    local target_dir="$HOME/.local/bin"
+    local target_file="$target_dir/rug"
+    
+    mkdir -p "$target_dir"
+    
+    cat > "$target_file" <<EOF
+#!/bin/bash
+"$SCRIPT_DIR/$(basename "$0")" "\$@"
+EOF
+    
+    chmod +x "$target_file"
+    echo "Утилита $NAME установлена в $target_file"
+    echo "Теперь вы можете запускать её из любой директории командой 'rug'"
+}
 
-#проверка на выход из программы
-if [[ $style_select == "" ]] || [[ ${select_button} == "1" ]];then
-exit 0
-fi
+# Обработка аргументов
+process_args() {
+    local has_gui=0
+    
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -gui)
+                if [ $has_gui -eq 1 ]; then
+                    echo "Ошибка: флаг -gui может быть использован только один раз"
+                    show_help
+                    exit 1
+                fi
+                has_gui=1
+                if [ -z "$2" ]; then
+                    echo "Ошибка: после -gui должно следовать название модуля"
+                    show_help
+                    exit 1
+                fi
+                run_scripts "gui" "$2" "gui"
+                shift 2
+                # После -gui не должно быть других флагов
+                if [ $# -gt 0 ]; then
+                    echo "Ошибка: после -gui не может быть других флагов"
+                    show_help
+                    exit 1
+                fi
+                ;;
+            -style)
+                if [ -z "$2" ]; then
+                    echo "Ошибка: после -style должен следовать субфлаг"
+                    show_help
+                    exit 1
+                fi
+                run_scripts "style" "$2" "style"
+                shift 2
+                ;;
+            -app)
+                if [ -z "$2" ]; then
+                    echo "Ошибка: после -app должны следовать субфлаги через запятую"
+                    show_help
+                    exit 1
+                fi
+                run_scripts "app" "$2" "app"
+                shift 2
+                ;;
+            -conf)
+                if [ -z "$2" ]; then
+                    echo "Ошибка: после -conf должны следовать субфлаги через запятую"
+                    show_help
+                    exit 1
+                fi
+                request_root_password
+                run_scripts "conf" "$2" "conf"
+                shift 2
+                ;;
+            -install)
+                install_rug
+                exit 0
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            -v|--version)
+                echo "$NAME версия $VERSION"
+                exit 0
+                ;;
+            *)
+                echo "Неизвестный аргумент: $1"
+                show_help
+                exit 1
+                ;;
+        esac
+    done
+}
 
-done
+# Главная функция
+main() {
+    if [ $# -eq 0 ]; then
+        show_help
+        exit 0
+    fi
+    
+    process_args "$@"
+}
 
-exit 0
+# Запуск программы
+main "$@"
